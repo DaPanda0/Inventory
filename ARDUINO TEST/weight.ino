@@ -1,8 +1,3 @@
-/*********************************************************************
-  This is an example based on nRF51822 based Bluefruit LE modules
-
-********************************************************************/
-
 #include <Arduino.h>
 #include <SPI.h>
 #include "Adafruit_BLE.h"
@@ -14,9 +9,6 @@
 #if SOFTWARE_SERIAL_AVAILABLE
 #include <SoftwareSerial.h>
 #endif
-
-/*=========================================================================
-       -----------------------------------------------------------------------*/
 #define FACTORYRESET_ENABLE         0
 #define MINIMUM_FIRMWARE_VERSION    "0.6.6"
 #define MODE_LED_BEHAVIOUR          "MODE"
@@ -43,8 +35,19 @@ void error(const __FlashStringHelper*err) {
             automatically on startup)
 */
 /**************************************************************************/
-void setup(void)
-{
+
+# include "HX711.h"
+HX711 scale(A2,A3);
+float weight;
+
+ 
+void combined () {
+  if (weight <- 1 || weight> 1 ){
+    Serial.println ("Inventory is Running low on ");
+      }
+  }
+
+void setup (){
   while (!Serial);  // required for Flora & Micro
   delay(500);
 
@@ -97,26 +100,29 @@ void setup(void)
   }
 
   //Give module a new name
-  ble.println("AT+GAPDEVNAME=LONE"); // named LONE
-
+  ble.println("AT+GAPDEVNAME=Fairmaiden"); // named LONE
+ 
   // Check response status
   ble.waitForOK();
-
   // Set module to DATA mode
   Serial.println( F("Switching to DATA mode!") );
   ble.setMode(BLUEFRUIT_MODE_DATA);
 
   Serial.println(F("******************************"));
-}
+
 
 /**************************************************************************/
 /*!
     @brief  Constantly poll for new command or response data
 */
 /**************************************************************************/
-void loop(void)
-{
-  // Check for user input
+ 
+  scale.tare(); // reset the scale to 0
+scale.set_scale(2280.f); // this value is obtained by calibrating the scale with known weights
+  }
+
+  void loop () {
+// Check for user input
   char n, inputs[BUFSIZE + 1];
 
   if (Serial.available())
@@ -140,4 +146,111 @@ void loop(void)
     Serial.print((char)c);
   }
   delay(1000);
+    
+
+    weight = scale.get_units(); // read the weight and store the value in the 'weight' variable
+   combined ();
+  // Serial.println(weight);
+ /*Serial.print ("weight in grams: ");
+ Serial.println(weight ); // print the weight over serial connection*/
+ 
+ ble.print(combined());
+ 
+    }
+
+
+/*#include "HX711.h"
+
+
+
+// HX711.DOUT  - pin #A1
+
+// HX711.PD_SCK - pin #A0
+
+
+
+HX711 scale(A1, A0);
+
+
+
+float read_ADC;
+
+float read_load;
+
+float read_average;
+
+
+
+void setup() {
+
+  Serial.begin(38400);
+
+  scale.set_scale(400.f); // this value is obtained by calibrating the scale with known weights; see the README for details
+
+  scale.tare();               // reset the scale to 0
+
+
+
+  Serial.print("read: \t\t");
+
+  Serial.println(scale.read());  // print a raw reading from the ADC
+
+
+
+  Serial.print("read average: \t\t");
+
+  Serial.println(scale.read_average(20));  // print the average of 20 readings from the ADC
+
+
+
+  Serial.print("get units: \t\t");
+
+  Serial.println(scale.get_units(5), 1);        // print the average of 5 readings from the ADC minus tare weight, divided
+
+  // by the SCALE parameter set with set_scale
+
+
+
+  Serial.println("Readings:");
+
 }
+
+
+
+void loop() {
+
+  read_ADC   =   scale.read();
+
+  Serial.print("read: \t");
+
+  Serial.println(read_ADC);                 // print a raw reading from the ADC
+
+
+
+  read_load   =    scale.get_units();
+
+
+
+  Serial.print("One reading:\t");
+
+  Serial.print(read_load, 1);
+
+  Serial.println("  Gram");
+
+
+
+  read_average   =    scale.get_units(10);
+
+  Serial.print("Average:\t");
+
+  Serial.print(read_average, 1); // print the average of 10 readings from the ADC minus tare weight, divided
+
+  // by the SCALE parameter set with set_scale
+
+  Serial.println("  Gram");
+
+
+
+  delay(1000);
+}
+*/
